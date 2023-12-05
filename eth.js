@@ -8,7 +8,7 @@ const { SMA, EMA, MACD } = require('technicalindicators');
 // const Medias = require("./medias");
 
 /////////////////////////////////////////////////////////////////////
-const TimeFrame = '1m'
+const TimeFrame = '15m'
 const alavancagem = 20
 const symbol = 'ETHUSDT';
 const valor_entrada = 0.10
