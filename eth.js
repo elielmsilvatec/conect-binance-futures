@@ -94,7 +94,7 @@ ws.onmessage = async (event) => {
                 })
                 .catch(err => console.error(err));          
             Operacao_aberta = 1
-            console.log("Compra" + ultima_vela)
+            console.log("Compra " + ultima_vela)
         }
         // // // stop de compra 
         if (Operacao_aberta === 1 && (ultima_vela < fibo_50 || ultima_vela < media24)) {
@@ -105,7 +105,7 @@ ws.onmessage = async (event) => {
                 })
                 .catch(err => console.error(err));
             Operacao_aberta = 0   
-            console.log("Stop da Compra" + ultima_vela);       
+            console.log("Stop da Compra " + ultima_vela);       
         }
 
         /// sinal de venda
