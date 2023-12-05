@@ -2,17 +2,17 @@ require('dotenv').config();
 const WebSocket = require('ws');
 const axios = require('axios');
 const api = require("./api");
-// const Futures = require("./database/FuturosModel")
+const Futures = require("./database/FuturosModel")
 const { SMA, EMA, MACD } = require('technicalindicators');
 
 // const Medias = require("./medias");
 
 /////////////////////////////////////////////////////////////////////
-const TimeFrame = '1m'
+const TimeFrame = '15m'
 const alavancagem = 20
 const symbol = 'ETHUSDT';
 const valor_entrada = 0.10
-const Fibo_periodo = 40; // Período de retorno
+const Fibo_periodo = 89; // Período de retorno
 
 const ws = new WebSocket(`${process.env.STREAM_URL}${symbol.toLowerCase()}@markPrice@1s`, {
     handshakeTimeout: 60000, // Tempo limite de aperto de mão em milissegundos
@@ -88,48 +88,143 @@ ws.onmessage = async (event) => {
 
         // sinal de compra
         if (ultima_vela > fibo_50 && ultima_vela > media24 && media24 > media52 && Operacao_aberta === 0) {
+
             api.newOrder(symbol, valor_entrada, "BUY")
                 .then(result => {
                     console.log(result);
                 })
-                .catch(err => console.error(err));          
+                .catch(err => console.error(err));
+
+            await Futures.update(
+                {
+                    simbulo: symbol,
+                    time_frame: TimeFrame,
+                    operação: 1,
+                    ultima_vela: ultima_vela,
+                    status: 'Compra',
+                },
+                {
+                    where: { id: 1 }
+                }
+            );
+
             Operacao_aberta = 1
-            console.log("Compra" + ultima_vela)
+
+            await Futures.create({
+                simbulo: symbol,
+                time_frame: TimeFrame,
+                operação: 1,
+                ultima_vela: ultima_vela,
+                status: 'Compra',
+            })
+
+
+            console.log("Compra")
         }
         // // // stop de compra 
         if (Operacao_aberta === 1 && (ultima_vela < fibo_50 || ultima_vela < media24)) {
             // stop de compra 
+            console.log("Stop da Compra");
+
             api.newOrder(symbol, valor_entrada, "SELL")
                 .then(result => {
                     console.log(result);
                 })
                 .catch(err => console.error(err));
-            Operacao_aberta = 0   
-            console.log("Stop da Compra" + ultima_vela);       
+
+
+            await Futures.update(
+                {
+                    simbulo: symbol,
+                    time_frame: TimeFrame,
+                    operação: 1,
+                    ultima_vela: ultima_vela,
+                    status: 'Stop da Compra',
+                },
+                {
+                    where: { id: 1 }
+                }
+            );
+
+            Operacao_aberta = 0
+
+            await Futures.create({
+                simbulo: symbol,
+                time_frame: TimeFrame,
+                operação: 0,
+                ultima_vela: ultima_vela,
+                status: 'Stop da Compra',
+            })
         }
 
-        /// sinal de venda
-        // if (ultima_vela < fibo_50 && ultima_vela < media24 && media24 < media52 && Operacao_aberta === 0) {
-        //     api.newOrder(symbol, valor_entrada, "SELL")
-        //         .then(result => {
-        //             console.log(result);
-        //         })
-        //         .catch(err => console.error(err));
-        //     Operacao_aberta = 2    
-        //     console.log("Venda" + ultima_vela)       
-        // }
 
-        // // stop de venda 
-        // if (Operacao_aberta === 2 && (ultima_vela > fibo_50 || ultima_vela > media24)) {        
-        //     api.newOrder(symbol, valor_entrada, "BUY")
-        //         .then(result => {
-        //             console.log(result);
-        //         })
-        //         .catch(err => console.error(err));    
-        //     Operacao_aberta = 0
-        //     console.log("Stop da Venda" + ultima_vela);
-          
-        // }
+
+
+        /// sinal de venda
+        if (ultima_vela < fibo_50 && ultima_vela < media24 && media24 < media52 && Operacao_aberta === 0) {
+            console.log("Venda")
+            api.newOrder(symbol, valor_entrada, "SELL")
+                .then(result => {
+                    console.log(result);
+                })
+                .catch(err => console.error(err));
+
+            await Futures.update(
+                {
+                    simbulo: symbol,
+                    time_frame: TimeFrame,
+                    operação: 2,
+                    ultima_vela: ultima_vela,
+                    status: 'Venda',
+                },
+                {
+                    where: { id: 1 }
+                }
+            );
+            Operacao_aberta = 2
+            await Futures.create({
+                simbulo: symbol,
+                time_frame: TimeFrame,
+                operação: 2,
+                ultima_vela: ultima_vela,
+                status: 'Venda',
+            })
+        }
+
+        // stop de venda 
+        if (Operacao_aberta === 2 && (ultima_vela > fibo_50 || ultima_vela > media24)) {
+            // stop de compra 
+            console.log("Stop da Venda");
+
+            api.newOrder(symbol, valor_entrada, "BUY")
+                .then(result => {
+                    console.log(result);
+                })
+                .catch(err => console.error(err));
+
+
+            await Futures.update(
+                {
+                    simbulo: symbol,
+                    time_frame: TimeFrame,
+                    operação: 1,
+                    ultima_vela: ultima_vela,
+                    status: 'Stop da Venda',
+                },
+                {
+                    where: { id: 1 }
+                }
+            );
+
+            Operacao_aberta = 0
+            await Futures.create({
+                simbulo: symbol,
+                time_frame: TimeFrame,
+                operação: 0,
+                ultima_vela: ultima_vela,
+                status: 'Stop da Venda',
+            })
+        }
 
 
 
