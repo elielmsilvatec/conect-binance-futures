@@ -12,19 +12,18 @@ app.set('views', __dirname + '/views');  // Especifique o diretório de views (c
 
 // Rota padrão para '/'
 
-// app.get('/', async (req, res) => {
+app.get('/', async (req, res) => {
 
-//     try {
-         
-//       const futuros = await Database.findAll();
-//       res.render('app', {
-//       futuros
-//       })
-//   } catch (error) {
-//       res.status(500).json({ error: error.message });
-//   }
+    try {
+    
+      res.render('app', {
+    
+      })
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
    
-//   })
+  })
   
 
 const PORT = process.env.PORT || 8080;

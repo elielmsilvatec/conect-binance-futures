@@ -31,7 +31,6 @@ const binance = new Binance.default({
 
 
 
-
 ws.onmessage = async (event) => {
     try {
         let obj = JSON.parse(event.data);
