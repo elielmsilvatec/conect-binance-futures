@@ -15,9 +15,10 @@ app.set('views', __dirname + '/views');  // Especifique o diretório de views (c
 app.get('/', async (req, res) => {
 
     try {
-    
+         
+      const futuros = await Database.findAll();
       res.render('app', {
-    
+      futuros
       })
   } catch (error) {
       res.status(500).json({ error: error.message });
